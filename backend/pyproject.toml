@@ -1,0 +1,19 @@
+[project]
+name = "myspace"
+version = "0.1.0"
+description = "Personal blog, built using FastAPI + Astro and Tailwind CSS"
+readme = "README.md"
+authors = [
+    { name = "Davide Donadio", email = "davide.donadio@protonmail.com" }
+]
+requires-python = ">=3.15"
+dependencies = [
+    "fastapi[standard]>=0.165.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[tool.uv]
+package = false
