@@ -9,3 +9,9 @@ wheels/
 # Virtual environments
 backend/.venv
 .idea
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
