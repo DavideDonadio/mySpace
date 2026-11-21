@@ -15,3 +15,19 @@ backend/.venv
 *.sqlite
 *.sqlite3
 
+# Frontend / Node
+node_modules/
+frontend/node_modules/
+.astro/
+frontend/.astro/
+dist/
+frontend/dist/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
