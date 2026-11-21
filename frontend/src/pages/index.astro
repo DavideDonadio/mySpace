@@ -23,6 +23,23 @@ const sortedPosts = getSortedPosts(posts);
 const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 const homePath = getRelativeLocaleUrl(locale, "");
+
+interface ApiPost {
+  id: number;
+  title: string;
+  body: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string
+}
+
+let apiPosts: ApiPost[] = [];
+
+try{
+  const res = await fetch("http://127.0.0.1:8000/posts?limit=3");
+  if(res.ok) apiPosts = await res.json();
+}
+catch (error){ console.error("FastAPI server offline or unreachable:", error);}
 ---
 
 <Layout>
@@ -70,41 +87,41 @@ const homePath = getRelativeLocaleUrl(locale, "");
       }
     </section>
 
-    {
-      featuredPosts.length > 0 && (
-        <section
-          id="featured"
-          class:list={[
-            "pt-12 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
-          ]}
-        >
+    <!-- Live Posts from FastAPI + SQLite -->
+        <section id="database-posts" class="border-border border-b pt-12 pb-6">
           <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.featured}
+            Recently on My Mind
           </h2>
-          <ul>
-            {featuredPosts.map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
 
-    {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
-          </h2>
-          <ul>
-            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
+          {
+            apiPosts.length === 0 ? (
+              <p class="text-muted-foreground mt-4 text-sm">
+                No posts found in SQLite database.
+              </p>
+            ) : (
+              <ul class="mt-4 space-y-4">
+                {apiPosts.map(post => (
+                  <li class="my-4">
+                    <h3 class="text-xl font-medium decoration-dashed hover:underline">
+                      {post.title}
+                    </h3>
+                    <p class="text-sm opacity-80 mt-1">{post.body}</p>
+                    <span class="text-xs opacity-60 mt-1 block">
+                      Published: {new Date(post.created_at).toLocaleDateString()}
+                    </span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      {post.tags.map(tag => (
+                        <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
         </section>
-      )
-    }
 
     <div class="my-8 text-center">
       <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>

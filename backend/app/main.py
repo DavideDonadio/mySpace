@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, status, Depends
 from app.schemas import PostCreate, PostResponse, PostUpdate
-from datetime import datetime
 from app.database import engine, Base, get_db
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from app.models import Post as PostModel
 from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
 
 # Allow requests from your Astro dev server
 origins = [
@@ -22,11 +23,6 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
-app = FastAPI()
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 @app.post("/posts", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(post: PostCreate, db: Session = Depends(get_db)):
@@ -38,8 +34,9 @@ async def create_post(post: PostCreate, db: Session = Depends(get_db)):
     return db_post
 
 @app.get("/posts", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
-async def get_posts(db: Session = Depends(get_db)):
-    posts = db.scalars(select(PostModel)).all()
+async def get_posts(db: Session = Depends(get_db), limit: int = 10):
+    query = select(PostModel).order_by(desc(PostModel.created_at)).limit(limit)
+    posts = db.scalars(query).all()
     return posts
 
 @app.get("/posts/{post_id}", response_model=PostResponse, status_code=status.HTTP_200_OK)

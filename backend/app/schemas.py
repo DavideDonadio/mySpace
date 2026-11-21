@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 class Post(BaseModel):
     title: str
     body: str
-    tag: PostType
+    tags: list[PostType]
 
 class PostCreate(Post):
     pass
