@@ -1,0 +1,100 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+
+export const prerender = false;
+
+const page = Astro.url.searchParams.get("page") || "1";
+let data = {
+  items: [] as any[],
+  total: 0,
+  page: 1,
+  limit: 5,
+  total_pages: 1,
+};
+
+try {
+  const res = await fetch("http://127.0.0.1:8000/posts?limit=5&page=" + page);
+  if (res.ok) {
+    data = await res.json();
+  }
+} catch (error) {
+  console.error("FastAPI server offline or unreachable:", error);
+}
+---
+
+<Layout title="All Posts | mySpace">
+  <Header activeNav="posts" />
+
+  <main id="main-content" class="app-layout my-8">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">All Posts</h1>
+    <p class="mt-2 text-sm opacity-70">
+      All articles and thoughts published so far.
+    </p>
+
+    <!-- Post List -->
+    {
+      data.items.length === 0 ? (
+        <p class="text-muted-foreground mt-8 text-sm">No posts found.</p>
+      ) : (
+        <ul class="mt-8 space-y-6">
+          {data.items.map((post: any) => (
+            <li class="border-border my-6 border-b pb-6">
+              <div class="mb-2 flex flex-wrap gap-2">
+                {post.tags &&
+                  post.tags.map((tag: string) => (
+                    <span class="bg-accent/10 text-accent rounded px-2 py-0.5 text-xs font-medium">
+                      #{tag}
+                    </span>
+                  ))}
+              </div>
+              <h2 class="text-2xl font-semibold decoration-dashed hover:underline">
+                <a href={`/posts/${post.id}`}>{post.title}</a>
+              </h2>
+              <p class="mt-2 line-clamp-2 text-sm opacity-80">{post.body}</p>
+              <span class="mt-2 block text-xs opacity-60">
+                Published on {new Date(post.created_at).toLocaleDateString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <!-- Pagination Controls -->
+    {
+      data.total_pages > 1 && (
+        <div class="border-border mt-8 flex items-center justify-between border-t pt-6 text-sm">
+          {data.page > 1 ? (
+            <a
+              href={`/posts?page=${data.page - 1}`}
+              class="hover:text-accent font-medium transition"
+            >
+              &larr; Previous Page
+            </a>
+          ) : (
+            <span class="cursor-not-allowed opacity-40">&larr; Previous</span>
+          )}
+
+          <span class="opacity-70">
+            Page {data.page} of {data.total_pages}
+          </span>
+
+          {data.page < data.total_pages ? (
+            <a
+              href={`/posts?page=${data.page + 1}`}
+              class="hover:text-accent font-medium transition"
+            >
+              Next Page &rarr;
+            </a>
+          ) : (
+            <span class="cursor-not-allowed opacity-40">Next &rarr;</span>
+          )}
+        </div>
+      )
+    }
+  </main>
+
+  <Footer />
+</Layout>

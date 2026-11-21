@@ -17,11 +17,6 @@ const { socials, posts: postsConfig } = config;
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
-
-const posts = await getCollection("posts");
-const sortedPosts = getSortedPosts(posts);
-const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
-const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 const homePath = getRelativeLocaleUrl(locale, "");
 
 interface ApiPost {
@@ -30,16 +25,20 @@ interface ApiPost {
   body: string;
   tags: string[];
   created_at: string;
-  updated_at: string
+  updated_at: string;
 }
 
 let apiPosts: ApiPost[] = [];
 
-try{
+try {
   const res = await fetch("http://127.0.0.1:8000/posts?limit=3");
-  if(res.ok) apiPosts = await res.json();
+  if (res.ok) {
+    const data = await res.json();
+    apiPosts = data.items;
+  }
+} catch (error) {
+  console.error("FastAPI server offline or unreachable:", error);
 }
-catch (error){ console.error("FastAPI server offline or unreachable:", error);}
 ---
 
 <Layout>
@@ -71,8 +70,8 @@ catch (error){ console.error("FastAPI server offline or unreachable:", error);}
 
       <p>
         mySpace is my digital corner, here you will find articles about anything
-        that i like or i am passionate about. The idea started from the desire to
-        learn more about FastAPI, Astro and Tailwind CSS. <br><br>
+        that i like or i am passionate about. The idea started from the desire
+        to learn more about FastAPI, Astro and Tailwind CSS. <br /><br />
         Enjoy your stay.
       </p>
       {
@@ -88,40 +87,40 @@ catch (error){ console.error("FastAPI server offline or unreachable:", error);}
     </section>
 
     <!-- Live Posts from FastAPI + SQLite -->
-        <section id="database-posts" class="border-border border-b pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
-            Recently on My Mind
-          </h2>
+    <section id="database-posts" class="border-border border-b pt-12 pb-6">
+      <h3 class="text-center text-3xl font-semibold tracking-wide">
+        Recently on My Mind 💭
+      </h3>
 
-          {
-            apiPosts.length === 0 ? (
-              <p class="text-muted-foreground mt-4 text-sm">
-                No posts found in SQLite database.
-              </p>
-            ) : (
-              <ul class="mt-4 space-y-4">
-                {apiPosts.map(post => (
-                  <li class="my-4">
-                    <h3 class="text-xl font-medium decoration-dashed hover:underline">
-                      {post.title}
-                    </h3>
-                    <p class="text-sm opacity-80 mt-1">{post.body}</p>
-                    <span class="text-xs opacity-60 mt-1 block">
-                      Published: {new Date(post.created_at).toLocaleDateString()}
+      {
+        apiPosts.length === 0 ? (
+          <p class="text-muted-foreground mt-4 text-sm">
+            No posts found in SQLite database.
+          </p>
+        ) : (
+          <ul class="mt-4 space-y-4">
+            {apiPosts.map(post => (
+              <li class="my-4">
+                <h3 class="text-xl font-medium decoration-dashed hover:underline">
+                  <a href={"/posts/" + post.id}>{post.title}</a>
+                </h3>
+                <p class="mt-1 text-sm opacity-80">{post.body}</p>
+                <span class="mt-1 block text-xs opacity-60">
+                  Published: {new Date(post.created_at).toLocaleDateString()}
+                </span>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  {post.tags.map(tag => (
+                    <span class="bg-accent/10 text-accent rounded px-2 py-0.5 text-xs font-medium">
+                      #{tag}
                     </span>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      {post.tags.map(tag => (
-                        <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )
-          }
-        </section>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </section>
 
     <div class="my-8 text-center">
       <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>

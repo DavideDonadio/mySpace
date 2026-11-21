@@ -22,8 +22,11 @@ import {
 } from "./src/utils/rehypeInlineToc";
 import config from "./astro-paper.config";
 
+import node from "@astrojs/node";
+
 export default defineConfig({
   site: config.site.url,
+
   integrations: [
     mdx(),
     sitemap({
@@ -32,6 +35,7 @@ export default defineConfig({
     }),
     inlineTocDeprecation(),
   ],
+
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
@@ -39,6 +43,7 @@ export default defineConfig({
       prefixDefaultLocale: false,
     },
   },
+
   markdown: {
     // Deprecated: the theme no longer uses remark-toc or remark-collapse. They
     // stay in package.json so a customised config importing them still builds,
@@ -63,9 +68,11 @@ export default defineConfig({
       ],
     },
   },
+
   vite: {
     plugins: [tailwindcss()],
   },
+
   fonts: [
     {
       name: "Google Sans Code",
@@ -77,6 +84,7 @@ export default defineConfig({
       formats: ["woff", "ttf"],
     },
   ],
+
   env: {
     schema: {
       PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
@@ -86,7 +94,12 @@ export default defineConfig({
       }),
     },
   },
+
   experimental: {
     svgOptimizer: svgoOptimizer(),
   },
+
+  adapter: node({
+    mode: "standalone",
+  }),
 });

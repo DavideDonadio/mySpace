@@ -1,0 +1,72 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+
+export const prerender = false;
+const { id } = Astro.params;
+
+interface ApiPost {
+  id: number;
+  title: string;
+  body: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+let post: ApiPost | null = null;
+
+try {
+  const res = await fetch("http://127.0.0.1:8000/posts/" + id);
+  if (res.ok) post = await res.json();
+} catch (error) {
+  console.error("FastAPI server offline or unreachable:", error);
+}
+if (!post) return Astro.redirect("/404");
+---
+
+<Layout title={`${post.title} | mySpace`}>
+  <Header />
+  <main id="main-content" class="app-layout my-8">
+    <a
+      href="/"
+      class="hover:text-accent inline-flex items-center gap-1 text-sm opacity-70 transition hover:opacity-100"
+    >
+      &larr; Back to all posts
+    </a>
+
+    <article class="mt-8">
+      <!-- Tag Badges -->
+      <div class="mb-3 flex flex-wrap gap-2">
+        {
+          post.tags.map(tag => (
+            <span class="bg-accent/10 text-accent rounded px-2 py-0.5 text-xs font-medium">
+              #{tag}
+            </span>
+          ))
+        }
+      </div>
+
+      <!-- Title -->
+      <h1 class="text-skin-accent text-3xl font-bold sm:text-4xl">
+        {post.title}
+      </h1>
+
+      <!-- Date -->
+      <span class="mt-2 block text-xs opacity-60">
+        Published on {new Date(post.created_at).toLocaleDateString()}
+      </span>
+
+      <hr class="border-border my-6" />
+
+      <!-- Post Body -->
+      <div
+        class="mt-6 text-base leading-relaxed whitespace-pre-wrap opacity-90"
+      >
+        {post.body}
+      </div>
+    </article>
+  </main>
+  <Footer />
+</Layout>
