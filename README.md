@@ -4,13 +4,14 @@ A personal tech blog and developer platform built with a decoupled architecture:
 
 ## Architecture
 
-- **Backend**: FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, managed with `uv`.
+- **Backend**: FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, PyJWT, Argon2 password hashing (`pwdlib`), managed with `uv`.
 - **Frontend**: Astro, TypeScript, Tailwind CSS, SSR mode via `@astrojs/node`.
 
 ```
 mySpace/
 ├── backend/       # FastAPI application and SQLite database
 │   ├── app/
+│   │   ├── auth.py
 │   │   ├── database.py
 │   │   ├── enums.py
 │   │   ├── main.py
@@ -32,7 +33,9 @@ mySpace/
 ## Features
 
 - Full CRUD REST API with typed Pydantic request and response schemas.
-- SQLite persistence via SQLAlchemy ORM with automatic schema initialization.
+- JWT-based authentication using Argon2 password hashing and PyJWT tokens.
+- Role-based route protection: public read endpoints, token-protected write endpoints (`POST`, `PATCH`, `DELETE`).
+- SQLite persistence via SQLAlchemy 2.0 ORM with automatic schema initialization.
 - Server-side offset pagination (`page`, `limit`).
 - Multiple tag support stored as JSON in SQLite and rendered as badges.
 - Cross-Origin Resource Sharing (CORS) configured for frontend communication.
@@ -69,10 +72,12 @@ The frontend will start at `http://localhost:4321`.
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/posts` | List posts with pagination (`?page=1&limit=5`) |
-| `POST` | `/posts` | Create a new post |
-| `GET` | `/posts/{id}` | Retrieve a post by ID |
-| `PATCH` | `/posts/{id}` | Partially update an existing post |
-| `DELETE` | `/posts/{id}` | Remove a post (204 No Content) |
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/posts` | List posts with pagination (`?page=1&limit=5`) | No |
+| `POST` | `/posts` | Create a new post | Yes (Bearer JWT) |
+| `GET` | `/posts/{id}` | Retrieve a post by ID | No |
+| `PATCH` | `/posts/{id}` | Partially update an existing post | Yes (Bearer JWT) |
+| `DELETE` | `/posts/{id}` | Remove a post (204 No Content) | Yes (Bearer JWT) |
+| `POST` | `/auth/register` | Register a new user | No |
+| `POST` | `/token` | Authenticate user and receive access token | No |

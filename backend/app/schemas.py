@@ -10,10 +10,8 @@ class Post(BaseModel):
     body: str
     tags: list[PostType]
 
-
 class PostCreate(Post):
     pass
-
 
 class PostResponse(Post):
     id: int
@@ -21,12 +19,10 @@ class PostResponse(Post):
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
-
 class PostUpdate(BaseModel):
     title: str | None = None
     body: str | None = None
     tag: str | None = None
-
 
 class PaginatedPostResponse(BaseModel):
     items: list[PostResponse]
@@ -34,3 +30,18 @@ class PaginatedPostResponse(BaseModel):
     page: int
     limit: int
     total_pages: int
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class User(BaseModel):
+    username: str
+
+class UserCreate(User):
+    password: str
+
+class UserResponse(User):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
