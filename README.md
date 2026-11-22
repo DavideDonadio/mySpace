@@ -1,15 +1,19 @@
 # mySpace
 
-A personal tech blog and developer platform built with a decoupled architecture: a FastAPI backend serving a REST API and an Astro frontend with TypeScript and Tailwind CSS.
+A personal tech blog and developer platform built with a decoupled architecture: a FastAPI backend serving a REST API and an Astro frontend with TypeScript and Tailwind CSS, fully containerized with Docker Compose.
 
 ## Architecture
 
-- **Backend**: FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, PyJWT, Argon2 password hashing (`pwdlib`), managed with `uv`.
+- **Backend**: FastAPI, SQLAlchemy 2.0, PostgreSQL 17, Pydantic v2, PyJWT, Argon2 (`pwdlib`), managed with `uv`.
 - **Frontend**: Astro, TypeScript, Tailwind CSS, SSR mode via `@astrojs/node`.
+- **Infrastructure**: Docker Compose multi-container setup with automated health checks, isolated networks, and persistent database volumes.
 
 ```
 mySpace/
-├── backend/       # FastAPI application and SQLite database
+├── compose.yaml   # Multi-container orchestration (DB, Backend, Frontend)
+├── .env.example   # Environment template
+│
+├── backend/       # FastAPI application & Dockerfile
 │   ├── app/
 │   │   ├── auth.py
 │   │   ├── database.py
@@ -17,9 +21,10 @@ mySpace/
 │   │   ├── main.py
 │   │   ├── models.py
 │   │   └── schemas.py
+│   ├── Dockerfile
 │   └── pyproject.toml
 │
-└── frontend/      # Astro blog application
+└── frontend/      # Astro blog application & Dockerfile
     ├── src/
     │   ├── pages/
     │   │   ├── index.astro
@@ -27,6 +32,7 @@ mySpace/
     │   │       ├── index.astro
     │   │       └── [id].astro
     │   └── ...
+    ├── Dockerfile
     └── package.json
 ```
 
@@ -35,40 +41,41 @@ mySpace/
 - Full CRUD REST API with typed Pydantic request and response schemas.
 - JWT-based authentication using Argon2 password hashing and PyJWT tokens.
 - Role-based route protection: public read endpoints, token-protected write endpoints (`POST`, `PATCH`, `DELETE`).
-- SQLite persistence via SQLAlchemy 2.0 ORM with automatic schema initialization.
+- PostgreSQL 17 persistence via SQLAlchemy 2.0 ORM with automatic schema initialization.
 - Server-side offset pagination (`page`, `limit`).
-- Multiple tag support stored as JSON in SQLite and rendered as badges.
+- Multiple tag support stored as JSON in PostgreSQL and rendered as badges.
 - Cross-Origin Resource Sharing (CORS) configured for frontend communication.
 - Dynamic page routing in Astro (`/posts/[id]`) with live data fetching from FastAPI.
+- 1-command startup via Docker Compose with health checks and volume persistence.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.12+ (tested with Python 3.15)
-- uv package manager
-- Node.js 20+ and npm
+- Docker and Docker Compose
 
-### 1. Run the Backend
+### 1. Configure Environment
 
-```bash
-cd backend
-uv sync
-uv run fastapi dev
-```
-
-The API will start at `http://127.0.0.1:8000`.
-Interactive OpenAPI documentation is available at `http://127.0.0.1:8000/docs`.
-
-### 2. Run the Frontend
+Copy the example environment file:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+cp .env.example .env
 ```
 
-The frontend will start at `http://localhost:4321`.
+*(Optionally update passwords or secrets inside `.env`)*
+
+### 2. Start the Stack
+
+Run one command at the root of the project:
+
+```bash
+docker compose up --build
+```
+
+- **Frontend**: `http://localhost:4321`
+- **Backend API**: `http://localhost:8000`
+- **Interactive API Documentation (Swagger)**: `http://localhost:8000/docs`
+- **PostgreSQL**: `localhost:5432`
 
 ## API Endpoints
 

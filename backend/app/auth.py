@@ -1,3 +1,4 @@
+import os
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -11,7 +12,9 @@ from app.database import get_db
 from sqlalchemy import select
 from app.models import User as UserModel
 
-SECRET_KEY = "8889c604d8018697b42938a7ee776a2e74d9dfca5981cf0f3dd740e99f7fd97e"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "8889c604d8018697b42938a7ee776a2e74d9dfca5981cf0f3dd740e99f7fd97e"
+)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
